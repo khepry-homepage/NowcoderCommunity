@@ -13,4 +13,9 @@
         order by type desc, create_time desc
         limit #{offset}, #{limit}
     </select>
+    <select id="findDiscussPostRows" resultType="int">
+        select count(1) from discuss_post
+        where status != 2
+        <if test="id != 0"> and user_id = #{id}</if>
+    </select>
 </mapper>
