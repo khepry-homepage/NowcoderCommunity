@@ -1,18 +1,18 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<link rel="icon" href="https://static.nowcoder.com/images/logo_87_87.png"/>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" crossorigin="anonymous">
-	<link rel="stylesheet" href="../../static/css/global.css" />
-	<link rel="stylesheet" href="../../static/css/login.css" />
+	<link rel="stylesheet" th:href="@{/css/global.css}" />
+	<link rel="stylesheet" th:href="@{/css/login.css}"} />
 	<title>牛客网-忘记密码</title>
 </head>
 <body>
 	<div class="nk-container">
 		<!-- 头部 -->
-		<header class="bg-dark sticky-top">
+		<header class="bg-dark sticky-top" th:replace="index::header">
 			<div class="container">
 				<!-- 导航 -->
 				<nav class="navbar navbar-expand-lg navbar-dark">
@@ -62,33 +62,36 @@
 		<!-- 内容 -->
 		<div class="main">
 			<div class="container pl-5 pr-5 pt-3 pb-3 mt-3 mb-3">
-				<form class="mt-5">				
+				<form class="mt-5" method="post">
 					<div class="form-group row">
 						<label for="your-email" class="col-sm-2 col-form-label text-right">邮箱:</label>
 						<div class="col-sm-10">
-							<input type="email" class="form-control" id="your-email" placeholder="请输入您的邮箱!" required>
-							<div class="invalid-feedback">
+							<input type="email" th:class="|form-control ${emailMsg!=null?'is-invalid':''}|"
+								   id="your-email" name="email" placeholder="请输入您的邮箱!" required>
+							<div class="invalid-feedback" th:text="${emailMsg}" id="email-desc">
 								该邮箱已被注册!
 							</div>
 						</div>
 					</div>
 					<div class="form-group row mt-4">
-						<label for="verifycode" class="col-sm-2 col-form-label text-right">验证码:</label>
+						<label for="captcha" class="col-sm-2 col-form-label text-right">验证码:</label>
 						<div class="col-sm-6">
-							<input type="text" class="form-control" id="verifycode" placeholder="请输入验证码!">
-							<div class="invalid-feedback">
+							<input type="text" th:class="|form-control ${captchaMsg!=null?'is-invalid':''}|"
+								   id="captcha" name="captcha" placeholder="请输入验证码!">
+							<div class="invalid-feedback" th:text="${captchaMsg}">
 								验证码不正确!
 							</div>
 						</div>
 						<div class="col-sm-4">
-							<a href="javascript:;" class="btn btn-info form-control">获取验证码</a>
+							<a href="javascript:getCaptcha();" id="captcha-button" class="btn btn-info form-control">获取验证码</a>
 						</div>
 					</div>	
 					<div class="form-group row mt-4">
 						<label for="your-password" class="col-sm-2 col-form-label text-right">新密码:</label>
 						<div class="col-sm-10">
-							<input type="password" class="form-control" id="your-password" placeholder="请输入新的密码!" required>
-							<div class="invalid-feedback">
+							<input type="password" th:class="|form-control ${newPasswordMsg!=null?'is-invalid':''}|"
+								   id="your-password" name="newPassword" placeholder="请输入新的密码!" required>
+							<div class="invalid-feedback" th:text="${newPasswordMsg}">
 								密码长度不能小于8位!
 							</div>							
 						</div>
@@ -169,6 +172,66 @@
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
-	<script src="../../static/js/global.js"></script>
+	<script th:src="@{/js/global.js}"></script>
+	<script>
+		let config = {
+			diabledTime: 60,
+		}
+		function captchaCountDown(time = 60, interval = 1) {
+			if (time < 0) { throw Error("illegal argument for time is negative"); }
+			let captchaBtn = document.getElementById("captcha-button");
+			let text = captchaBtn.innerText;
+			return function () {
+				captchaBtn.className = "btn btn-info form-control disabled";
+				let timer = setInterval(() => {
+					captchaBtn.innerText = `${time}秒后可重新发送`;
+					time--;
+					if (time == 0) {
+						clearInterval(timer);
+						captchaBtn.className = "btn btn-info form-control";
+						captchaBtn.innerText = text;
+					}
+				}, interval * 1000)
+			}
+		}
+		function getCaptcha() {
+			let email = $("#your-email").val();
+			let emailInputDom = document.getElementById("your-email");
+			let descDom = document.getElementById("email-desc");
+			if (!checkEmailIsValid(email)) {
+				emailInputDom.className = "form-control is-invalid";
+				descDom.innerText = "邮箱格式不正确";
+				return;
+			}
+			emailInputDom.className = "form-control";
+			captchaCountDown()();
+			let context_path = document.location.href;
+			let regex = /\/community.*/g;
+			let url = context_path.replace(regex, "/community/user/sendCaptcha");
+			let data = {
+				email
+			}
+			$.ajax({
+				url,
+				type: 'POST',
+				dataType: 'json',
+				data,
+				xhrFields: {
+					withCredentials: true
+				},
+				timeout: 5000,
+				success: function (res) {
+					alert("邮件已发送");
+				},
+				error: function () {
+					alert("邮件发送失败, 请重试");
+				}
+			})
+		}
+		function checkEmailIsValid(email) {
+			let regex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+			return regex.test(email);
+		}
+	</script>
 </body>
 </html>

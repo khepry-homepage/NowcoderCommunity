@@ -9,6 +9,7 @@ public interface UserMapper {
     User selectByName(String username);
     User selectByEmail(String email);
     int insertUser(User user);
+    int updatePassword(int id, String password);
     int updateType(int id, int type);
     int updateStatus(int id, int status);
     int updateHeaderUrl(int id, String headerUrl);

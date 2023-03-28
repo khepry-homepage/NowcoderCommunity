@@ -67,8 +67,10 @@
 					<div class="form-group row">
 						<label for="username" class="col-sm-2 col-form-label text-right">账号:</label>
 						<div class="col-sm-10">
-							<input type="text" th:class="|form-control ${usernameMsg!=null?'is-invalid':''}|" id="username" name="username" placeholder="请输入您的账号!" required>
-							<div class="invalid-feedback" th:value="usernameMsg">
+							<input type="text" th:class="|form-control ${usernameMsg!=null?'is-invalid':''}|"
+								   th:value="${user!=null?user.username:''}"
+								   id="username" name="username" placeholder="请输入您的账号!" required>
+							<div class="invalid-feedback" th:text="${usernameMsg}">
 								该账号不存在!
 							</div>
 						</div>
@@ -76,31 +78,33 @@
 					<div class="form-group row mt-4">
 						<label for="password" class="col-sm-2 col-form-label text-right">密码:</label>
 						<div class="col-sm-10">
-							<input type="password" th:class="|form-control ${passwordMsg!=null?'is-invalid':''}|" id="password" name="password" placeholder="请输入您的密码!" required>
-							<div class="invalid-feedback" th:value="passwordMsg">
+							<input type="password" th:class="|form-control ${passwordMsg!=null?'is-invalid':''}|"
+								   th:value="${user!=null?user.password:''}"
+								   id="password" name="password" placeholder="请输入您的密码!" required>
+							<div class="invalid-feedback" th:text="${passwordMsg}">
 								密码长度不能小于8位!
 							</div>							
 						</div>
 					</div>
 					<div class="form-group row mt-4">
-						<label for="verifycode" class="col-sm-2 col-form-label text-right">验证码:</label>
+						<label for="captcha" class="col-sm-2 col-form-label text-right">验证码:</label>
 						<div class="col-sm-6">
-							<input type="text" class="form-control is-invalid" id="verifycode" placeholder="请输入验证码!">
-							<div class="invalid-feedback">
+							<input type="text" th:class="|form-control ${captchaMsg!=null?'is-invalid':''}|" id="captcha" name="captcha" placeholder="请输入验证码!">
+							<div class="invalid-feedback" th:text="${captchaMsg}">
 								验证码不正确!
 							</div>
 						</div>
 						<div class="col-sm-4">
-							<img th:src="@{static/img/captcha.png}" style="width:100px;height:40px;" class="mr-2"/>
-							<a href="javascript:;" class="font-size-12 align-bottom">刷新验证码</a>
+							<img th:src="@{/user/getCaptcha}" style="width:100px;height:40px;" class="mr-2" id="captchaImg"/>
+							<a href="javascript:flushCaptcha();" class="font-size-12 align-bottom">刷新验证码</a>
 						</div>
 					</div>				
 					<div class="form-group row mt-4">
 						<div class="col-sm-2"></div>
 						<div class="col-sm-10">
-							<input type="checkbox" id="remember-me" checked="checked">
+							<input type="checkbox" id="remember-me" name="isRemember" checked="checked">
 							<label class="form-check-label" for="remember-me">记住我</label>
-							<a href="forget.html" class="text-danger float-right">忘记密码?</a>
+							<a th:href="@{/user/forget}" class="text-danger float-right">忘记密码?</a>
 						</div>
 					</div>				
 					<div class="form-group row mt-4">
@@ -179,5 +183,16 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
 	<script th:src="@{/js/global.js}"></script>
+	<script>
+		function flushCaptcha() {
+			let imgObj = document.getElementById("captchaImg");
+			if (imgObj == null) {
+				return;
+			}
+			//	http://localhost:8080/community/user/getCaptcha
+			let url = `${imgObj.src}?p=1`;
+			imgObj.setAttribute("src", url);
+		}
+	</script>
 </body>
 </html>
