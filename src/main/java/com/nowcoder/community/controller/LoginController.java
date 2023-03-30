@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/user")
 public class LoginController {
     private Logger logger  = LoggerFactory.getLogger(getClass());
     @Autowired
@@ -64,7 +63,7 @@ public class LoginController {
             model.addAttribute("usernameMsg", msgs.get("usernameMsg"));
             model.addAttribute("passwordMsg", msgs.get("passwordMsg"));
         }
-        Cookie cookie = new Cookie("login_ticket", (String)msgs.get("ticket"));
+        Cookie cookie = new Cookie(Constants.LOGIN_TICKET, (String)msgs.get("ticket"));
         cookie.setPath(contextPath);
         cookie.setMaxAge(ticketDuration);
         httpServletResponse.addCookie(cookie);
@@ -75,7 +74,7 @@ public class LoginController {
         return "site/forget";
     }
     @RequestMapping(path = "/forget", method = RequestMethod.POST)
-    public String resetPassword(Model model, @CookieValue("login_ticket") String login_ticket, String email, String captcha, String newPassword, HttpSession session) {
+    public String resetPassword(Model model, @CookieValue(Constants.LOGIN_TICKET) String login_ticket, String email, String captcha, String newPassword, HttpSession session) {
         if (email == null) {
             model.addAttribute("emailMsg", "邮箱不能为空");
             return "site/forget";
@@ -98,13 +97,13 @@ public class LoginController {
             userService.logout(login_ticket);
         }
         model.addAttribute("msg", "重置密码成功");
-        model.addAttribute("target", "/user/login");
+        model.addAttribute("target", "/login");
         return "site/operate-result";
     }
     @RequestMapping(path = "/logout", method = RequestMethod.GET)
-    public String logout(@CookieValue("login_ticket") String login_ticket) {
+    public String logout(@CookieValue(Constants.LOGIN_TICKET) String login_ticket) {
         userService.logout(login_ticket);
-        return "redirect:/user/login";
+        return "redirect:/login";
     }
     @RequestMapping(path = "/register", method = RequestMethod.GET)
     public String register() {
@@ -134,7 +133,7 @@ public class LoginController {
             model.addAttribute("target", "/home/index");
         } else {
             model.addAttribute("msg", "激活成功");
-            model.addAttribute("target", "/user/login");
+            model.addAttribute("target", "/login");
         }
         return "site/operate-result";
     }

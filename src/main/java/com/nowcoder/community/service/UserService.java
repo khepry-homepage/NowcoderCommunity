@@ -37,6 +37,13 @@ public class UserService {
         return userMapper.selectById(id);
     }
     public User findUserByEmail(String email) { return userMapper.selectByEmail(email); }
+    public int updateHeaderUrl(int userId, String headerUrl) {
+        return userMapper.updateHeaderUrl(userId, headerUrl);
+    }
+    public int updatePassword(int userId, String password, String salt) {
+        return userMapper.updatePassword(userId, CommunityUtil.md5(password + salt));
+    }
+    public LoginTicket findLoginTicketByTicket(String ticket) { return loginTicketMapper.selectByTicket(ticket); }
 
     public Map<String, Object> login(String username, String password, int ticketDuration) {
         Map<String, Object> msgs = new HashMap<>();
@@ -120,9 +127,9 @@ public class UserService {
         userMapper.insertUser(user);
 
         // 发送激活邮件
-        // 访问激活服务url示例：http://localhost:8080/community/user/activation/100/code
+        // 访问激活服务url示例：http://localhost:8080/community/activation/100/code
         Context context = new Context();
-        String url = String.format("%s%s/user/activation/%d/%s", domain, path, user.getId(), user.getActivationCode());
+        String url = String.format("%s%s/activation/%d/%s", domain, path, user.getId(), user.getActivationCode());
         context.setVariable("email", user.getEmail());
         context.setVariable("url", url);
         String content = templateEngine.process("/mail/activation", context);
@@ -147,7 +154,7 @@ public class UserService {
             msgs.put("emailMsg", "该邮箱未注册！");
             return msgs;
         }
-        userMapper.updatePassword(user.getId(), CommunityUtil.md5(password + user.getSalt()));
+        updatePassword(user.getId(), password, user.getSalt());
         return msgs;
     }
 }
