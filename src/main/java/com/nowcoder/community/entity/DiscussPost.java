@@ -3,14 +3,23 @@ package com.nowcoder.community.entity;
 import java.util.Date;
 
 public class DiscussPost {
+    private int id;
     private int userId;
     private String title;
     private String content;
     private int type;
     private int status;
     private Date createTime;
-    private int commentCnt;
+    private int commentCount;
     private double score;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public int getUserId() {
         return userId;
@@ -60,12 +69,12 @@ public class DiscussPost {
         this.createTime = createTime;
     }
 
-    public int getCommentCnt() {
-        return commentCnt;
+    public int getCommentCount() {
+        return commentCount;
     }
 
-    public void setCommentCnt(int commentCnt) {
-        this.commentCnt = commentCnt;
+    public void setCommentCount(int commentCount) {
+        this.commentCount = commentCount;
     }
 
     public double getScore() {
@@ -85,7 +94,7 @@ public class DiscussPost {
                 ", type=" + type +
                 ", status=" + status +
                 ", createTime=" + createTime +
-                ", commentCnt=" + commentCnt +
+                ", commentCount=" + commentCount +
                 ", score=" + score +
                 '}';
     }

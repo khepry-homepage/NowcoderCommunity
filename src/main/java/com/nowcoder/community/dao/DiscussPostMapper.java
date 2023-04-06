@@ -7,6 +7,8 @@ import java.util.List;
 
 @Mapper
 public interface DiscussPostMapper {
-    public List<DiscussPost> selectDiscussPosts(int id, int offset, int limit);
-    public int findDiscussPostRows(int id);
+    DiscussPost selectDiscussPostDetail(int id);
+    List<DiscussPost> selectDiscussPosts(int userId, int offset, int limit);
+    int selectDiscussPostRows(int userId);
+    int insertDiscussPost(DiscussPost discussPost);
 }

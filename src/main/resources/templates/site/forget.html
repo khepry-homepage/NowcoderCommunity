@@ -205,9 +205,7 @@
 			}
 			emailInputDom.className = "form-control";
 			captchaCountDown()();
-			let context_path = document.location.href;
-			let regex = /\/community.*/g;
-			let url = context_path.replace(regex, "/community/sendCaptcha");
+			let url = `${CONTEXT_PATH}/sendCaptcha`;
 			let data = {
 				email
 			}

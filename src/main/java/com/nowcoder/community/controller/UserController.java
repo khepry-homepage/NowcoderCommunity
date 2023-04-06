@@ -1,5 +1,6 @@
 package com.nowcoder.community.controller;
 
+import com.nowcoder.community.Annotation.LoginRequired;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.utils.CommunityUtil;
@@ -35,10 +36,12 @@ public class UserController {
     private String contextPath;
     @Value("${community.upload.location}")
     private String uploadLocation;
+    @LoginRequired
     @RequestMapping(path = "/setting", method = RequestMethod.GET)
     public String setting() {
         return "site/setting";
     }
+    @LoginRequired
     @RequestMapping(path = "/uploadHeader", method = RequestMethod.POST)
     public String uploadHeader(MultipartFile headerImage, Model model) {
         if (headerImage == null) {
@@ -82,6 +85,7 @@ public class UserController {
             throw new RuntimeException(e);
         }
     }
+    @LoginRequired
     @RequestMapping(path = "/resetPassword", method = RequestMethod.POST)
     public String resetPassword(Model model, String oldPassword, String newPassword) {
         User user = userHolder.get();
@@ -97,6 +101,6 @@ public class UserController {
             return "site/setting";
         }
         userService.updatePassword(user.getId(), newPassword, user.getSalt());
-        return "redirect:/home/index";
+        return "redirect:/logout";
     }
 }
