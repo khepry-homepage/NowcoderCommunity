@@ -41,7 +41,7 @@
 							<ul class="d-inline float-right">
 								<li class="d-inline ml-2"><a href="#" class="text-primary">赞 11</a></li>
 								<li class="d-inline ml-2">|</li>
-								<li class="d-inline ml-2"><a href="#replyform" class="text-primary">回帖 7</a></li>
+								<li class="d-inline ml-2"><a href="#replyform" class="text-primary" th:text="|回帖 ${post.commentCount}|">回帖 7</a></li>
 							</ul>
 						</div>
 					</div>
@@ -61,7 +61,7 @@
 				<!-- 回帖数量 -->
 				<div class="row">
 					<div class="col-8">
-						<h6><b class="square"></b> <i th:text="${post.commentCount}">30</i>条回帖</h6>
+						<h6 ><b class="square"></b> <i th:text="|${post.commentCount} 条回帖|">30 条回帖</i></h6>
 					</div>
 					<div class="col-4 text-right">
 						<a href="#replyform" class="btn btn-primary btn-sm">&nbsp;&nbsp;回&nbsp;&nbsp;帖&nbsp;&nbsp;</a>
@@ -77,7 +77,7 @@
 						<div class="media-body">
 							<div class="mt-0">
 								<span class="font-size-12 text-success" th:utext="${comment.user.username}">掉脑袋切切</span>
-								<span class="badge badge-secondary float-right floor" th:text="${commentStat.index + 1}">1#</span>
+								<span class="badge badge-secondary float-right floor" th:text="|${commentStat.index + 1} #|">1#</span>
 							</div>
 							<div class="mt-2" th:utext="${comment.comment.content}">
 								这开课时间是不是有点晚啊。。。
@@ -87,11 +87,15 @@
 								<ul class="d-inline float-right">
 									<li class="d-inline ml-2"><a href="#" class="text-primary">赞(1)</a></li>
 									<li class="d-inline ml-2">|</li>
-									<li class="d-inline ml-2"><a href="#" class="text-primary">回复(2)</a></li>
+									<li class="d-inline ml-2" th:onclick="handleReplyExpand([[|reply-list-${commentStat.index}|]])">
+										<a th:href="|#comment-reply-${commentStat.index}|" data-toggle="collapse" class="text-primary">
+											回复<i th:if="${comment.subComments!=null}" th:text="|(${comment.subComments.size})|">(2)</i>
+										</a>
+									</li>
 								</ul>
 							</div>
 							<!-- 回复列表 -->
-							<ul class="list-unstyled mt-4 bg-gray p-3 font-size-12 text-muted">
+							<ul th:id="|reply-list-${commentStat.index}|" th:class="|list-unstyled mt-4 bg-gray p-3 font-size-12 text-muted ${comment.subComments!=null?'show':'hidden'}|">
 								<!-- 第1条回复 -->
 								<li class="pb-3 pt-3 mb-3 border-bottom" th:each="subComment:${comment.subComments}">
 									<div>
@@ -110,11 +114,11 @@
 										<ul class="d-inline float-right">
 											<li class="d-inline ml-2"><a href="#" class="text-primary">赞(1)</a></li>
 											<li class="d-inline ml-2">|</li>
-											<li class="d-inline ml-2"><a href="#huifu01" data-toggle="collapse" class="text-primary">回复</a></li>
+											<li class="d-inline ml-2"><a th:href="|#huifu-${subCommentStat.index}|" data-toggle="collapse" class="text-primary">回复</a></li>
 										</ul>
-										<div id="huifu01" class="mt-4 collapse">
+										<div th:id="|huifu-${subCommentStat.index}|" class="mt-4 collapse">
 											<div>
-												<input type="text" class="input-size" placeholder="回复寒江雪"/>
+												<input type="text" class="input-size" th:placeholder="|回复${subComment.user.username}|"/>
 											</div>
 											<div class="text-right mt-2">
 												<button type="button" class="btn btn-primary btn-sm" onclick="#">&nbsp;&nbsp;回&nbsp;&nbsp;复&nbsp;&nbsp;</button>
@@ -123,7 +127,7 @@
 									</div>								
 								</li>
 								<!-- 回复输入框 -->
-								<li class="pb-3 pt-3">
+								<li class="pb-3 pt-3 collapse" th:id="|comment-reply-${commentStat.index}|">
 									<div>
 										<input type="text" class="input-size" placeholder="请输入你的观点"/>
 									</div>
@@ -136,17 +140,21 @@
 					</li >
 				</ul>
 				<!-- 分页 -->
-				<nav class="mt-5">
+				<nav class="mt-5" th:if="${page!=null&&page.totalPages > 0}">
 					<ul class="pagination justify-content-center">
-						<li class="page-item"><a class="page-link" href="#">首页</a></li>
-						<li class="page-item disabled"><a class="page-link" href="#">上一页</a></li>
-						<li class="page-item active"><a class="page-link" href="#">1</a></li>
-						<li class="page-item"><a class="page-link" href="#">2</a></li>
-						<li class="page-item"><a class="page-link" href="#">3</a></li>
-						<li class="page-item"><a class="page-link" href="#">4</a></li>
-						<li class="page-item"><a class="page-link" href="#">5</a></li>
-						<li class="page-item"><a class="page-link" href="#">下一页</a></li>
-						<li class="page-item"><a class="page-link" href="#">末页</a></li>
+						<li class="page-item"><a class="page-link" th:href="@{${page.path}(currentPageId=1)}">首页</a></li>
+						<li th:class="|page-item ${page.currentPageId==1?'disabled':''}|">
+							<a class="page-link" th:href="@{${page.path}(currentPageId=${page.currentPageId}-1)}">上一页</a>
+						</li>
+						<li th:each="i:${#numbers.sequence(page.from, page.to)}" th:class="|page-item ${i==page.currentPageId?'active':''}|">
+							<a class="page-link" th:href="@{${page.path}(currentPageId=${i})}" th:text="${i}">1</a>
+						</li>
+						<li th:class="|page-item ${page.currentPageId==page.totalPages?'disabled':''}|">
+							<a class="page-link" th:href="@{${page.path}(currentPageId=${page.currentPageId}+1)}">下一页</a>
+						</li>
+						<li class="page-item">
+							<a class="page-link" th:href="@{${page.path}(currentPageId=${page.totalPages})}">末页</a>
+						</li>
 					</ul>
 				</nav>			
 			</div>
@@ -230,5 +238,17 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
 	<script th:src="@{/js/global.js}"></script>
+	<script>
+		function handleReplyExpand(id) {
+			let list = document.getElementById(id);
+			if (list.children?.length > 1) return;
+			let className = list.className;
+			if (className.indexOf("hidden") < 0) {
+				list.className = className.replace("show", "hidden");
+			} else {
+				list.className = className.replace("hidden", "show");
+			}
+		}
+	</script>
 </body>
 </html>

@@ -7,4 +7,5 @@ import java.util.List;
 public interface CommentMapper {
     List<Comment> selectComments(int entityType, int entityId, int offset, int limit);
     int selectCommentCount(int entityType, int entityId);
+    int insertComment(Comment comment);
 }

@@ -116,6 +116,10 @@ a:hover {
 	display: none;
 }
 
+.show {
+	display: block;
+}
+
 .rt-0 {
 	right: 0;
 	top: 0;
