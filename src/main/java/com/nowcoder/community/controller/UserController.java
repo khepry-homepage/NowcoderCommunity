@@ -85,13 +85,10 @@ public class UserController {
             throw new RuntimeException(e);
         }
     }
-    @LoginRequired
     @RequestMapping(path = "/resetPassword", method = RequestMethod.POST)
+    @LoginRequired
     public String resetPassword(Model model, String oldPassword, String newPassword) {
         User user = userHolder.get();
-        if (user == null) {
-            return "redirect:/site/login";
-        }
         if (!user.getPassword().equals(CommunityUtil.md5(oldPassword + user.getSalt()))) {
             model.addAttribute("oldPasswordMsg", "原密码填写不正确!");
             return "site/setting";

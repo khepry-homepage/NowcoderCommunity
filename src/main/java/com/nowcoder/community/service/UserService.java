@@ -36,6 +36,7 @@ public class UserService {
     public User findUserById(int id) {
         return userMapper.selectById(id);
     }
+    public User findUserByName(String username) { return userMapper.selectByName(username); }
     public User findUserByEmail(String email) { return userMapper.selectByEmail(email); }
     public int updateHeaderUrl(int userId, String headerUrl) {
         return userMapper.updateHeaderUrl(userId, headerUrl);

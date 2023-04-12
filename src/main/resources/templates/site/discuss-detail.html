@@ -118,10 +118,12 @@
 										</ul>
 										<div th:id="|huifu-${subCommentStat.index}|" class="mt-4 collapse">
 											<div>
-												<input type="text" class="input-size" th:placeholder="|回复${subComment.user.username}|"/>
+												<input type="text" class="input-size" th:placeholder="|回复${subComment.user.username}|"
+													th:id="|subComment-reply-textarea-${subCommentStat.index}|"/>
 											</div>
 											<div class="text-right mt-2">
-												<button type="button" class="btn btn-primary btn-sm" onclick="#">&nbsp;&nbsp;回&nbsp;&nbsp;复&nbsp;&nbsp;</button>
+												<button type="button" class="btn btn-primary btn-sm"
+														th:onclick="replyPost([[|subComment-reply-textarea-${subCommentStat.index}|]], 2, [[${comment.comment.id}]], [[${subComment.reply.id}]])">&nbsp;&nbsp;回&nbsp;&nbsp;复&nbsp;&nbsp;</button>
 											</div>										
 										</div>
 									</div>								
@@ -129,10 +131,10 @@
 								<!-- 回复输入框 -->
 								<li class="pb-3 pt-3 collapse" th:id="|comment-reply-${commentStat.index}|">
 									<div>
-										<input type="text" class="input-size" placeholder="请输入你的观点"/>
+										<input type="text" class="input-size" th:id="|comment-reply-textarea-${commentStat.index}|" placeholder="请输入你的观点"/>
 									</div>
 									<div class="text-right mt-2">
-										<button type="button" class="btn btn-primary btn-sm" onclick="#">&nbsp;&nbsp;回&nbsp;&nbsp;复&nbsp;&nbsp;</button>
+										<button type="button" class="btn btn-primary btn-sm" th:onclick="replyPost([[|comment-reply-textarea-${commentStat.index}|]], 2, [[${comment.comment.id}]])">&nbsp;&nbsp;回&nbsp;&nbsp;复&nbsp;&nbsp;</button>
 									</div>
 								</li>
 							</ul>
@@ -163,10 +165,11 @@
 				<form class="replyform">
 					<p class="mt-3">
 						<a name="replyform"></a>
-						<textarea placeholder="在这里畅所欲言你的看法吧!"></textarea>
+						<textarea id="reply-textarea" placeholder="在这里畅所欲言你的看法吧!"></textarea>
 					</p>
 					<p class="text-right">
-						<button type="submit" class="btn btn-primary btn-sm">&nbsp;&nbsp;回&nbsp;&nbsp;帖&nbsp;&nbsp;</button>
+						<!-- type="submit"在chrome和firefox浏览器里会被认为是提交数据，从而自动刷新页面造成文本框数据丢失 -->
+						<button type="button" class="btn btn-primary btn-sm" th:onclick="replyPost('reply-textarea', 1, [[${post.id}]])">&nbsp;&nbsp;回&nbsp;&nbsp;帖&nbsp;&nbsp;</button>
 					</p>
 				</form>
 			</div>
@@ -248,6 +251,37 @@
 			} else {
 				list.className = className.replace("hidden", "show");
 			}
+		}
+
+		function replyPost(domId, entityType, entityId, targetId = 0) {
+			let url = `${CONTEXT_PATH}/discuss/postComment`;
+			let input = document.getElementById(domId);
+			$.ajax({
+				url,
+				type: 'POST',
+				dataType: 'json',
+				data: {
+					entityType,
+					entityId,
+					targetId,
+					content: input.value,
+				},
+				xhrFields: {
+					withCredentials: true
+				},
+				timeout: 5000,
+				success: function (res) {
+					if (res?.code != 200) {
+						alert(res.msg);
+						return;
+					}
+					window.location.reload();
+				},
+				error: function (err) {
+					console.log(err);
+					alert("发布失败, 服务器异常！", err);
+				}
+			})
 		}
 	</script>
 </body>

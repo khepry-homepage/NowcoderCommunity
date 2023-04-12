@@ -64,7 +64,10 @@ public class Page {
      * @return
      */
     public int getTotalPages() {
-        return (int)(totalRows / limit + 0.5);
+        if (totalRows == 0) {
+            return 1;
+        }
+        return (int)Math.ceil((double) totalRows / limit);
     }
 
     /**

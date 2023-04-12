@@ -31,4 +31,7 @@ public class DiscussPostService {
         post.setContent(sensitiveFilter.filterMatch(post.getContent()));
         return discussPostMapper.insertDiscussPost(post);
     }
+    public int updateCommentCount(int id, int commentCount) {
+        return discussPostMapper.updateCommentCount(id, commentCount);
+    }
 }

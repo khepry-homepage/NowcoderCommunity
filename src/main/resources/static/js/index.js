@@ -4,14 +4,14 @@ $(function(){
 
 function publish() {
 	let url = `${CONTEXT_PATH}/discuss/publish`;
-	let title = $("#recipient-name").val();
+	let username = $("#recipient-name").val();
 	let content = $("#message-text").val();
 	$.ajax({
 		url,
 		type: 'POST',
 		dataType: 'json',
 		data: {
-			title,
+			username,
 			content
 		},
 		xhrFields: {
@@ -26,6 +26,7 @@ function publish() {
 			$("#publishModal").modal("hide");
 			$("#hintModal").modal("show");
 			setTimeout(function(){
+				window.location.reload();
 				$("#hintModal").modal("hide");
 			}, 2000);
 		},
@@ -34,5 +35,4 @@ function publish() {
 			alert("发布失败, 服务器异常！", err);
 		}
 	})
-
 }
