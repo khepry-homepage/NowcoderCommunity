@@ -8,6 +8,7 @@ import com.nowcoder.community.entity.Page;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.CommentService;
 import com.nowcoder.community.service.DiscussPostService;
+import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.utils.CommunityUtil;
 import com.nowcoder.community.utils.Constants;
@@ -37,6 +38,8 @@ public class DiscussPostController {
     private UserService userService;
     @Autowired
     private UserHolder userHolder;
+    @Autowired
+    private LikeService likeService;
 
     @RequestMapping(path = "/publish", method = RequestMethod.POST)
     @LoginRequired
@@ -57,7 +60,7 @@ public class DiscussPostController {
     @RequestMapping(path = "/detail/{userId}/{id}", method = RequestMethod.GET)
     @LoginRequired
     public String getDetail(@PathVariable("userId") int userId, @PathVariable("id") int id, Model model, Page page) {
-        DiscussPost post = discussPostService.findDiscussPostDetail(id);
+        DiscussPost post = discussPostService.findDiscussPostById(id);
         //  帖子已失效
         if (post == null) {
             model.addAttribute("msg", "该帖子已被删除！");
@@ -79,7 +82,9 @@ public class DiscussPostController {
         page.setPath("/discuss/detail/" + userId + "/" + id);
         page.setLimit(5);
         User loginUser = userHolder.get();
-
+        //  获取帖子点赞数已经用户点赞状态
+        long postLikeCount = likeService.findLikeCount(Constants.ENTITY_TYPE_POST, post.getId());
+        int postLikeStatus = likeService.findLikeStatusById(loginUser.getId(), Constants.ENTITY_TYPE_POST, post.getId());
         //  帖子主体评论列表
         List<Comment> comments = commentService.findComments(Constants.ENTITY_TYPE_POST, post.getId(), page.getOffset(), page.getLimit());
         /**
@@ -92,6 +97,10 @@ public class DiscussPostController {
             List<Map<String, Object>> commentList = new ArrayList<>();
             for (Comment comment : comments) {
                 Map<String, Object> newComment = new HashMap<>();
+                long commentLikeCount = likeService.findLikeCount(Constants.ENTITY_TYPE_COMMENT, comment.getId());
+                int commentLikeStatus = likeService.findLikeStatusById(loginUser.getId(), Constants.ENTITY_TYPE_COMMENT, comment.getId());
+                newComment.put("commentLikeCount", commentLikeCount);
+                newComment.put("commentLikeStatus", commentLikeStatus);
                 newComment.put("comment", comment);
                 newComment.put("user", userService.findUserById(comment.getUserId()));
                 List<Comment> subComments = commentService.findComments(Constants.ENTITY_TYPE_COMMENT, comment.getId(),
@@ -104,6 +113,10 @@ public class DiscussPostController {
                     List<Map<String, Object>> subCommentList = new ArrayList<>();
                     for (Comment subComment : subComments) {
                         Map<String, Object> newSubComment = new HashMap<>();
+                        long replyLikeCount = likeService.findLikeCount(Constants.ENTITY_TYPE_COMMENT, subComment.getId());
+                        int replyLikeStatus = likeService.findLikeStatusById(loginUser.getId(), Constants.ENTITY_TYPE_COMMENT, subComment.getId());
+                        newSubComment.put("replyLikeCount", replyLikeCount);
+                        newSubComment.put("replyLikeStatus", replyLikeStatus);
                         //  回复内容
                         newSubComment.put("reply", subComment);
                         //  回复的用户
@@ -115,7 +128,7 @@ public class DiscussPostController {
                         int targetId = subComment.getTargetId();
                         //  如果是评论区对某人的回复
                         if (targetId != 0) {
-                            Comment targetComment = commentService.findComent(targetId);
+                            Comment targetComment = commentService.findCommentById(targetId);
                             int targetUserId = targetComment.getUserId();
                             newSubComment.put("target", userCache.containsKey(targetUserId) ? userCache.get(targetUserId) : userService.findUserById(targetUserId));
                         }
@@ -134,7 +147,8 @@ public class DiscussPostController {
         model.addAttribute("publisher", user);
         model.addAttribute("post", post);
         model.addAttribute("loginUser", loginUser);
-
+        model.addAttribute("postLikeCount", postLikeCount);
+        model.addAttribute("postLikeStatus", postLikeStatus);
         return "site/discuss-detail";
     }
     @RequestMapping(path = "/postComment", method = RequestMethod.POST)
@@ -154,14 +168,14 @@ public class DiscussPostController {
         Comment comment = new Comment();
         //  如果是评论，判断该帖子是否存在
         if (entityType == Constants.ENTITY_TYPE_POST) {
-            DiscussPost post = discussPostService.findDiscussPostDetail(entityId);
+            DiscussPost post = discussPostService.findDiscussPostById(entityId);
             if (post == null) {
                 return CommunityUtil.toJSONObject(400, "非法请求！");
             }
             // 更新帖子的评论数
             discussPostService.updateCommentCount(entityId, post.getCommentCount() + 1);
         } else {    //   如果是回复，判断回复的评论区以及回复的目标评论（有的话）是否存在
-            Comment entityComment = commentService.findComent(entityId);
+            Comment entityComment = commentService.findCommentById(entityId);
             //  回复的评论区是否存在
             if (entityComment == null) {
                 return CommunityUtil.toJSONObject(400, "非法请求！");

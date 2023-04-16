@@ -147,3 +147,7 @@ em {
 	font-style: normal;
 	color: red;
 }
+
+.forbidden {
+	pointer-events: none
+}

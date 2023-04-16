@@ -4,7 +4,9 @@ import com.nowcoder.community.entity.DiscussPost;
 import com.nowcoder.community.entity.Page;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.DiscussPostService;
+import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
+import com.nowcoder.community.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +25,8 @@ public class HomeController {
     private UserService userService;
     @Autowired
     private DiscussPostService discussPostService;
+    @Autowired
+    private LikeService likeService;
     @RequestMapping("/index")
     public String getIndexPage(Model model, Page page) {
         page.setTotalRows(discussPostService.findDiscussPostRows(0));
@@ -32,13 +36,19 @@ public class HomeController {
         if (discussPostsList != null) {
             for (DiscussPost discussPost : discussPosts) {
                 Map<String, Object> map = new HashMap<>();
+                long likeCount = likeService.findLikeCount(Constants.ENTITY_TYPE_POST, discussPost.getId());
                 User user = userService.findUserById(discussPost.getUserId());
                 map.put("post", discussPost);
                 map.put("user", user);
+                map.put("likeCount", likeCount);
                 discussPostsList.add(map);
             }
         }
         model.addAttribute("discussPosts", discussPostsList);
         return "index";
+    }
+    @RequestMapping(value = "/error", method = RequestMethod.GET)
+    public String getErrorPage() {
+        return "error/500";
     }
 }

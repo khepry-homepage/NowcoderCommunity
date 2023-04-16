@@ -15,7 +15,7 @@ public class CommentService {
     @Autowired
     private SensitiveFilter sensitiveFilter;
 
-    public Comment findComent(int id) {
+    public Comment findCommentById(int id) {
         return commentMapper.selectById(id);
     }
 
