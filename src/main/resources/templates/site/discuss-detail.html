@@ -157,22 +157,7 @@
 					</li >
 				</ul>
 				<!-- 分页 -->
-				<nav class="mt-5" th:if="${page!=null&&page.totalPages > 0}">
-					<ul class="pagination justify-content-center">
-						<li class="page-item"><a class="page-link" th:href="@{${page.path}(currentPageId=1)}">首页</a></li>
-						<li th:class="|page-item ${page.currentPageId==1?'disabled':''}|">
-							<a class="page-link" th:href="@{${page.path}(currentPageId=${page.currentPageId}-1)}">上一页</a>
-						</li>
-						<li th:each="i:${#numbers.sequence(page.from, page.to)}" th:class="|page-item ${i==page.currentPageId?'active':''}|">
-							<a class="page-link" th:href="@{${page.path}(currentPageId=${i})}" th:text="${i}">1</a>
-						</li>
-						<li th:class="|page-item ${page.currentPageId==page.totalPages?'disabled':''}|">
-							<a class="page-link" th:href="@{${page.path}(currentPageId=${page.currentPageId}+1)}">下一页</a>
-						</li>
-						<li class="page-item">
-							<a class="page-link" th:href="@{${page.path}(currentPageId=${page.totalPages})}">末页</a>
-						</li>
-					</ul>
+				<nav class="mt-5" th:replace="~{index::pagination}">
 				</nav>			
 			</div>
 			<!-- 回帖输入 -->

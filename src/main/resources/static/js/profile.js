@@ -3,12 +3,30 @@ $(function(){
 });
 
 function follow() {
-	var btn = this;
-	if($(btn).hasClass("btn-info")) {
-		// 关注TA
-		$(btn).text("已关注").removeClass("btn-info").addClass("btn-secondary");
-	} else {
-		// 取消关注
-		$(btn).text("关注TA").removeClass("btn-secondary").addClass("btn-info");
-	}
+	let btn = this;
+	let url = `${CONTEXT_PATH}/follow/changeFollowStatus`;
+	$.ajax({
+		url,
+		type: "POST",
+		dataType: "json",
+		data: {
+			"followeeId": $(btn).prev().val(),
+			"entityType": 0,
+		},
+		xhrFields: {
+			withCredentials: true
+		},
+		timeout: 5000,
+		success: function (res) {
+			if (res?.code != 200) {
+				alert(res.msg);
+				return;
+			}
+			window.location.reload();
+		},
+		error: function (err) {
+			console.log(err);
+			alert("关注失败, 服务器异常！", err);
+		}
+	})
 }

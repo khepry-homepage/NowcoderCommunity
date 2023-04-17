@@ -48,7 +48,8 @@ public class LikeService {
      */
     public long findLikeCount(int entityType, int entityId) {
         String key = RedisKeyUtil.getLikeEntityKey(entityType, entityId);
-        return redisTemplate.opsForSet().size(key);
+        Long count = redisTemplate.opsForSet().size(key);
+        return count == null ? 0 : count;
     }
 
     /**
@@ -64,6 +65,7 @@ public class LikeService {
     }
     public int findUserLikeCount(int userId) {
         String key = RedisKeyUtil.getLikeUserKey(userId);
-        return (Integer) redisTemplate.opsForValue().get(key);
+        Integer count = (Integer) redisTemplate.opsForValue().get(key);
+        return count == null ? 0 : count;
     }
 }
