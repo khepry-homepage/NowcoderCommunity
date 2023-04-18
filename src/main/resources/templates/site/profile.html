@@ -21,13 +21,13 @@
 				<div class="position-relative">
 					<ul class="nav nav-tabs">
 						<li class="nav-item">
-							<a class="nav-link active" href="profile.html">个人信息</a>
+							<a class="nav-link active" th:href="@{|/profile/${userId}|}">个人信息</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="my-post.html">我的帖子</a>
+							<a class="nav-link" th:href="@{|/profile/getMyPost/${userId}|}"><b th:text="${isMyProfile?'我':'他'}">我</b>的帖子</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="my-reply.html">我的回复</a>
+							<a class="nav-link" th:href="@{|/profile/getMyReply/${userId}|}"><b th:text="${isMyProfile?'我':'他'}">我</b>的回复</a>
 						</li>
 					</ul>
 				</div>

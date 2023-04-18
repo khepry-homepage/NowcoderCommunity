@@ -19,15 +19,14 @@ public class CommentService {
         return commentMapper.selectById(id);
     }
 
-    public List<Comment> findComments(int entityType, int entityId, int offset, int limit) {
-        return commentMapper.selectComments(entityType, entityId, offset, limit);
+    public List<Comment> findComments(int userId, int entityType, int entityId, int offset, int limit) {
+        return commentMapper.selectComments(userId, entityType, entityId, offset, limit);
     }
 
-    public int findCommentRows(int entityType, int entityId) {
-        return commentMapper.selectCommentCount(entityType, entityId);
+    public int findCommentRows(int userId, int entityType, int entityId) {
+        return commentMapper.selectCommentCount(userId, entityType, entityId);
     }
     public int addComment(Comment comment) {
-
         comment.setContent(sensitiveFilter.filterMatch(comment.getContent()));
         return commentMapper.insertComment(comment);
     }

@@ -57,9 +57,9 @@ public class DiscussPostController {
         discussPostService.addDiscussPost(post);
         return CommunityUtil.toJSONObject(200, "帖子发布成功！");
     }
-    @RequestMapping(path = "/detail/{userId}/{id}", method = RequestMethod.GET)
+    @RequestMapping(path = "/detail/{id}", method = RequestMethod.GET)
     @LoginRequired
-    public String getDetail(@PathVariable("userId") int userId, @PathVariable("id") int id, Model model, Page page) {
+    public String getDetail(@PathVariable("id") int id, Model model, Page page) {
         DiscussPost post = discussPostService.findDiscussPostById(id);
         //  帖子已失效
         if (post == null) {
@@ -67,26 +67,17 @@ public class DiscussPostController {
             model.addAttribute("target", "/home/index");
             return "site/operate-result";
         }
-        //  传递的用户id非帖子发布者, 强制重定向回首页
-        if (post.getUserId() != userId) {
-            return "index";
-        }
-        User user = userService.findUserById(userId);
-        //  用户已注销
-        if (user == null) {
-            model.addAttribute("msg", "该用户已注销, 无法查看帖子详情！");
-            model.addAttribute("target", "/home/index");
-            return "site/operate-result";
-        }
+
         page.setTotalRows(post.getCommentCount());
-        page.setPath("/discuss/detail/" + userId + "/" + id);
+        page.setPath("/discuss/detail/" + id);
         page.setLimit(5);
+        User publisher = userService.findUserById(post.getUserId());
         User loginUser = userHolder.get();
-        //  获取帖子点赞数已经用户点赞状态
+        //  获取帖子点赞数以及用户点赞状态
         long postLikeCount = likeService.findLikeCount(Constants.ENTITY_TYPE_POST, post.getId());
         int postLikeStatus = likeService.findLikeStatusById(loginUser.getId(), Constants.ENTITY_TYPE_POST, post.getId());
         //  帖子主体评论列表
-        List<Comment> comments = commentService.findComments(Constants.ENTITY_TYPE_POST, post.getId(), page.getOffset(), page.getLimit());
+        List<Comment> comments = commentService.findComments(0, Constants.ENTITY_TYPE_POST, post.getId(), page.getOffset(), page.getLimit());
         /**
          * [
          *  { comment, subComment },
@@ -103,7 +94,7 @@ public class DiscussPostController {
                 newComment.put("commentLikeStatus", commentLikeStatus);
                 newComment.put("comment", comment);
                 newComment.put("user", userService.findUserById(comment.getUserId()));
-                List<Comment> subComments = commentService.findComments(Constants.ENTITY_TYPE_COMMENT, comment.getId(),
+                List<Comment> subComments = commentService.findComments(0, Constants.ENTITY_TYPE_COMMENT, comment.getId(),
                         0, Integer.MAX_VALUE);
                 // 评论是否有回复
                 if (subComments != null && !subComments.isEmpty()) {
@@ -144,7 +135,7 @@ public class DiscussPostController {
         } else {
             model.addAttribute("comments", null);
         }
-        model.addAttribute("publisher", user);
+        model.addAttribute("publisher", publisher);
         model.addAttribute("post", post);
         model.addAttribute("loginUser", loginUser);
         model.addAttribute("postLikeCount", postLikeCount);
@@ -182,7 +173,7 @@ public class DiscussPostController {
             }
             //  回复的目标评论是否存在
             if (targetId != 0) {
-                List<Comment> subComments = commentService.findComments(Constants.ENTITY_TYPE_COMMENT,
+                List<Comment> subComments = commentService.findComments(0, Constants.ENTITY_TYPE_COMMENT,
                         entityId, 0, Integer.MAX_VALUE);
                 if (subComments == null) {
                     return CommunityUtil.toJSONObject(400, "非法请求！");

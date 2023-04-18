@@ -31,7 +31,7 @@
 				</h6>
 				<!-- 作者 -->
 				<div class="media pb-3 border-bottom">
-					<a href="profile.html">
+					<a th:href="@{|/profile/${publisher.id}|}">
 						<img th:src="${publisher.headerUrl}" class="align-self-start mr-4 rounded-circle user-header" alt="用户头像" >
 					</a>
 					<div class="media-body">
@@ -41,7 +41,7 @@
 							<ul class="d-inline float-right">
 								<li class="d-inline ml-2">
 									<a href="javascript:;" th:class="|text-primary ${loginUser.id==publisher.id?'forbidden':''}|"
-										th:onclick="changeLikeStatus(this, 0, [[${post.id}]])">
+										th:onclick="changeLikeStatus(this, 1, [[${post.id}]])">
 										<b th:text="${postLikeStatus==1?'已赞':'赞'}">赞</b> <i th:text="${postLikeCount}">11</i>
 									</a>
 								</li>
@@ -76,7 +76,7 @@
 				<ul class="list-unstyled mt-4">
 					<!-- 第1条回帖 -->
 					<li class="media pb-3 pt-3 mb-3 border-bottom" th:each="comment:${comments}">
-						<a href="profile.html">
+						<a th:href="@{|/profile/${comment.user.id}|}">
 							<img th:src="${comment.user.headerUrl}" class="align-self-start mr-4 rounded-circle user-header" alt="用户头像" >
 						</a>
 						<div class="media-body">

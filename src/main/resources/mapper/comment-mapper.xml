@@ -17,16 +17,18 @@
         select <include refid="selectColumns"></include>
         from comment
         where status = 0
-        and entity_type = #{entityType}
-        and entity_id = #{entityId}
+        <if test="userId != 0">and user_id = #{userId}</if>
+        <if test="entityType != 0">and entity_type = #{entityType}</if>
+        <if test="entityId != 0">and entity_id = #{entityId}</if>
         order by create_time asc
         limit #{offset}, #{limit}
     </select>
     <select id="selectCommentCount" resultType="int">
         select count(1) from comment
         where status = 0
-        and entity_type = #{entityType}
-        and entity_id = #{entityId}
+        <if test="userId != 0">and user_id = #{userId}</if>
+        <if test="entityType != 0">and entity_type = #{entityType}</if>
+        <if test="entityId != 0">and entity_id = #{entityId}</if>
     </select>
     <insert id="insertComment" parameterType="Comment" keyProperty="id">
         insert into comment(<include refid="insertColumns"></include>)

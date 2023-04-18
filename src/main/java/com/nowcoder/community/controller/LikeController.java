@@ -6,6 +6,7 @@ import com.nowcoder.community.service.DiscussPostService;
 import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.utils.CommunityUtil;
+import com.nowcoder.community.utils.Constants;
 import com.nowcoder.community.utils.UserHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -31,8 +32,11 @@ public class LikeController {
     @ResponseBody
     public String changeLikeStatus(int entityType, int entityId) {
         User user = userHolder.get();
-        //  当点赞目标为帖子是，entityType = 0
-        int entityUserId = entityType > 0 ? commentService.findCommentById(entityId).getUserId()
+        //  当点赞目标为帖子是，entityType = 1
+        if (entityType != Constants.ENTITY_TYPE_POST && entityType != Constants.ENTITY_TYPE_COMMENT) {
+            return CommunityUtil.toJSONObject(400, "无效参数 - entityType");
+        }
+        int entityUserId = entityType == Constants.ENTITY_TYPE_COMMENT ? commentService.findCommentById(entityId).getUserId()
                 : discussPostService.findDiscussPostById(entityId).getUserId();
         if (entityUserId == user.getId()) {
             return CommunityUtil.toJSONObject(400, "不能点赞自己的帖子或评论!");
