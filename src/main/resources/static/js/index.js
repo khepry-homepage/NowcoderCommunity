@@ -4,14 +4,14 @@ $(function(){
 
 function publish() {
 	let url = `${CONTEXT_PATH}/discuss/publish`;
-	let username = $("#recipient-name").val();
+	let title = $("#recipient-name").val();
 	let content = $("#message-text").val();
 	$.ajax({
 		url,
 		type: 'POST',
 		dataType: 'json',
 		data: {
-			username,
+			title,
 			content
 		},
 		xhrFields: {

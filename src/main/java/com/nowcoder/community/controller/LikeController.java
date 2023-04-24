@@ -1,6 +1,8 @@
 package com.nowcoder.community.controller;
 
+import com.nowcoder.community.entity.Event;
 import com.nowcoder.community.entity.User;
+import com.nowcoder.community.event.EventProducer;
 import com.nowcoder.community.service.CommentService;
 import com.nowcoder.community.service.DiscussPostService;
 import com.nowcoder.community.service.LikeService;
@@ -28,6 +30,8 @@ public class LikeController {
     private CommentService commentService;
     @Autowired
     private DiscussPostService discussPostService;
+    @Autowired
+    private EventProducer producer;
     @RequestMapping(path = "/changeStatus", method = RequestMethod.POST)
     @ResponseBody
     public String changeLikeStatus(int entityType, int entityId) {
@@ -44,6 +48,16 @@ public class LikeController {
         likeService.like(user.getId(), entityType, entityId, entityUserId);
         long likeCount = likeService.findLikeCount(entityType, entityId);
         int isLike = likeService.findLikeStatusById(user.getId(), entityType, entityId);
+        //  当触发点赞事件时再进行通知
+        if (isLike == 1) {
+            Event event = new Event()
+                    .setUserId(user.getId())
+                    .setEventType(Constants.EVENT_TYPE_LIKE)
+                    .setEntityType(entityType)
+                    .setEntityId(entityId)
+                    .setEntityUserId(entityUserId);
+            producer.commitEvent(event);
+        }
         Map<String, Object> map = new HashMap<>();
         map.put("likeCount", likeCount);
         map.put("isLike", isLike);

@@ -2,10 +2,8 @@ package com.nowcoder.community.controller;
 
 
 import com.nowcoder.community.Annotation.LoginRequired;
-import com.nowcoder.community.entity.Comment;
-import com.nowcoder.community.entity.DiscussPost;
-import com.nowcoder.community.entity.Page;
-import com.nowcoder.community.entity.User;
+import com.nowcoder.community.entity.*;
+import com.nowcoder.community.event.EventProducer;
 import com.nowcoder.community.service.CommentService;
 import com.nowcoder.community.service.DiscussPostService;
 import com.nowcoder.community.service.LikeService;
@@ -40,6 +38,8 @@ public class DiscussPostController {
     private UserHolder userHolder;
     @Autowired
     private LikeService likeService;
+    @Autowired
+    private EventProducer producer;
 
     @RequestMapping(path = "/publish", method = RequestMethod.POST)
     @LoginRequired
@@ -196,7 +196,13 @@ public class DiscussPostController {
         comment.setContent(content);
         comment.setCreateTime(new Date());
         commentService.addComment(comment);
-
+        Event event = new Event()
+                .setEntityUserId(targetId == 0 ? commentService.findCommentById(entityId).getUserId() : commentService.findCommentById(targetId).getUserId())
+                .setEventType(Constants.EVENT_TYPE_COMMENT)
+                .setEntityType(entityType)
+                .setEntityId(entityId)
+                .setUserId(user.getId());
+        producer.commitEvent(event);
         return CommunityUtil.toJSONObject(200, "success！");
     }
 }

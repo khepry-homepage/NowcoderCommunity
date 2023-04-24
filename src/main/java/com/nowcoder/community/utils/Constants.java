@@ -12,6 +12,10 @@ public class Constants {
     public static final String RESET_PASSWORD_KAPTCHA_SESSION_KEY = "reset_password_kaptcha_session_key";
     public static final int ENTITY_TYPE_POST = 1;                           //  评论类型为帖子评论
     public static final int ENTITY_TYPE_COMMENT = 2;                        //  评论类型为回复评论
-    public static final int FOLLOW_ENTITY_TYPE_USER = 0;                    //  关注类型为用户
-    public static final int FOLLOW_ENTITY_TYPE_POST = 1;                    //  关注类型为帖子
+    public static final int FOLLOW_ENTITY_TYPE_USER = 3;                    //  关注类型为用户
+    public static final int FOLLOW_ENTITY_TYPE_POST = 4;                    //  关注类型为帖子
+    public static final String EVENT_TYPE_LIKE = "like";                    //  事件类型：点赞
+    public static final String EVENT_TYPE_COMMENT = "comment";              //  事件类型：评论
+    public static final String EVENT_TYPE_FOLLOW = "follow";                    //  事件类型：关注
+    public static final int SYSTEM_USER_ID = 1;                             //  系统用户id
 }

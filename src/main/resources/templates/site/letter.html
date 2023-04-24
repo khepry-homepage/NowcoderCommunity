@@ -22,12 +22,12 @@
 					<!-- 选项 -->
 					<ul class="nav nav-tabs mb-3">
 						<li class="nav-item">
-							<a class="nav-link position-relative active" href="letter.html">朋友私信
-								<span class="badge badge-danger" th:if="${totalUnRead>0}" th:text="${totalUnRead}">3</span>
+							<a class="nav-link position-relative active" th:href="@{/message/letter}">朋友私信
+								<span class="badge badge-danger" th:if="${letterUnReadCnt>0}" th:text="${totalUnRead}">3</span>
 							</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link position-relative" href="notice.html">系统通知<span class="badge badge-danger">27</span></a>
+							<a class="nav-link position-relative" th:href="@{/message/notice}">系统通知<span class="badge badge-danger" th:if="${noticeUnReadCnt>0}" th:text="${noticeUnReadCnt}">27</span></a>
 						</li>
 					</ul>
 					<button type="button" class="btn btn-primary btn-sm position-absolute rt-0" data-toggle="modal" data-target="#sendModal">发私信</button>
@@ -91,10 +91,10 @@
 								</span>
 							</h6>
 							<div>
-								<a th:href="@{|/letter/detail/${map.message.conversationId}|}" th:text="${map.message.content}">米粉车, 你来吧!</a>
+								<a th:href="@{|/message/letter/detail/${map.message.conversationId}|}" th:text="${map.message.content}">米粉车, 你来吧!</a>
 								<ul class="d-inline font-size-12 float-right">
 									<li class="d-inline ml-2">
-										<a th:href="@{|/letter/detail/${map.message.conversationId}|}" class="text-primary" th:text="|共${map.total}条会话|">共5条会话</a>
+										<a th:href="@{|/message/letter/detail/${map.message.conversationId}|}" class="text-primary" th:text="|共${map.total}条会话|">共5条会话</a>
 									</li>
 								</ul>
 							</div>

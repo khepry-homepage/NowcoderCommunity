@@ -1,12 +1,15 @@
 package com.nowcoder.community.controller;
 
 import com.nowcoder.community.entity.DiscussPost;
+import com.nowcoder.community.entity.Message;
 import com.nowcoder.community.entity.Page;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.DiscussPostService;
 import com.nowcoder.community.service.LikeService;
+import com.nowcoder.community.service.MessageService;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.utils.Constants;
+import com.nowcoder.community.utils.UserHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,13 +25,18 @@ import java.util.Map;
 @RequestMapping(path = "/home", method = RequestMethod.GET)
 public class HomeController {
     @Autowired
+    private UserHolder userHolder;
+    @Autowired
     private UserService userService;
     @Autowired
     private DiscussPostService discussPostService;
     @Autowired
     private LikeService likeService;
+    @Autowired
+    private MessageService messageService;
     @RequestMapping("/index")
     public String getIndexPage(Model model, Page page) {
+        User loginUser = userHolder.get();
         page.setTotalRows(discussPostService.findDiscussPostRows(0));
         page.setPath("/home/index");
         List<DiscussPost> discussPosts = discussPostService.findDiscussPosts(0, page.getOffset(), page.getLimit());
@@ -44,6 +52,13 @@ public class HomeController {
                 discussPostsList.add(map);
             }
         }
+        model.addAttribute("totalUnRead", 0);
+        if (loginUser != null) {
+            model.addAttribute("totalUnRead",
+                    messageService.findNoticeUnReadCount(loginUser.getId(), null) +
+                    messageService.findLetterUnReadCount(loginUser.getId(), null));
+        }
+
         model.addAttribute("discussPosts", discussPostsList);
         return "index";
     }

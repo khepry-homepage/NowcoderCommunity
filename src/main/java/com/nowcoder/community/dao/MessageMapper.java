@@ -22,7 +22,12 @@ public interface MessageMapper {
      * @param conversationId    :   return total unread letters if null
      * @return
      */
-    public int selectUnReadCount(int userId, String conversationId);
+    public int selectLetterUnReadCount(int userId, String conversationId);
+    //  获取用户的系统通知列表（分页）
+    public List<Message> selectNoticeList(int userId);
+    public List<Message> selectNotices(int userId, String conversationId, int offset, int limit);
+    public int selectNoticeRows(int userId, String conversationId);
+    public int selectNoticeUnReadCount(int userId, String conversationId);
     public int insertMessage(Message message);
     public int updateConversationStatus(int userId, int status, String conversationId);
 }

@@ -1,7 +1,9 @@
 package com.nowcoder.community.controller;
 
+import com.nowcoder.community.entity.Event;
 import com.nowcoder.community.entity.Page;
 import com.nowcoder.community.entity.User;
+import com.nowcoder.community.event.EventProducer;
 import com.nowcoder.community.service.FollowService;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.utils.CommunityUtil;
@@ -27,14 +29,26 @@ public class FollowController {
     private UserService userService;
     @Autowired
     FollowService followService;
+    @Autowired
+    private EventProducer producer;
     @RequestMapping(path = "/changeFollowStatus", method = RequestMethod.POST)
     @ResponseBody
     public String changeFollowStatus(int followeeId, int entityType) {
         User user = userHolder.get();
-        if (entityType < Constants.FOLLOW_ENTITY_TYPE_USER || entityType > Constants.ENTITY_TYPE_POST) {
+        if (entityType < Constants.ENTITY_TYPE_POST || entityType > Constants.FOLLOW_ENTITY_TYPE_USER) {
             return CommunityUtil.toJSONObject(400, "无效的请求参数 - 关注类型");
         }
         followService.follow(user.getId(), entityType, followeeId);
+        //  向被关注的用户发通知
+        if (followService.isFollower(user.getId(), followeeId, entityType)) {
+            Event event = new Event()
+                    .setEventType(Constants.EVENT_TYPE_FOLLOW)
+                    .setUserId(user.getId())
+                    .setEntityId(followeeId)
+                    .setEntityUserId(followeeId)
+                    .setEntityType(entityType);
+            producer.commitEvent(event);
+        }
         return CommunityUtil.toJSONObject(200, "ok");
     }
     @RequestMapping(path = "/followees/{userId}", method = RequestMethod.GET)

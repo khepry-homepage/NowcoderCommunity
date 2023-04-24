@@ -4,7 +4,7 @@ $(function(){
 });
 
 function send_letter() {
-	let url = `${CONTEXT_PATH}/letter/send`;
+	let url = `${CONTEXT_PATH}/message/send`;
 	let username = $("#recipient-name").val();
 	let content = $("#message-text").val();
 	$.ajax({

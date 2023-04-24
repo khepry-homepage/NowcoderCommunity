@@ -11,7 +11,7 @@ function follow() {
 		dataType: "json",
 		data: {
 			"followeeId": $(btn).prev().val(),
-			"entityType": 0,
+			"entityType": 3,
 		},
 		xhrFields: {
 			withCredentials: true

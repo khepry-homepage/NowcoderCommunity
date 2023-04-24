@@ -44,10 +44,43 @@
         where status != 2
         and conversation_id = #{conversationId}
     </select>
-    <select id="selectUnReadCount" resultType="int">
+    <select id="selectLetterUnReadCount" resultType="int">
         select count(1) from message
         where status = 0
         and from_id != 1
+        and to_id = #{userId}
+        <if test="conversationId != null">and conversation_id = #{conversationId}</if>
+    </select>
+    <select id="selectNoticeList" resultType="Message">
+        select <include refid="selectColumns"></include> from message
+        where id in (
+            select max(id) from message
+            where from_id = 1
+            and status != 2
+            and to_id = #{userId}
+            group by conversation_id
+        )
+    </select>
+    <select id="selectNotices" resultType="Message">
+        select <include refid="selectColumns"></include> from message
+        where status != 2
+        and from_id = 1
+        and to_id = #{userId}
+        and conversation_id = #{conversationId}
+        order by create_time desc
+        limit #{offset}, #{limit}
+    </select>
+    <select id="selectNoticeRows" resultType="int">
+        select count(1) from message
+        where status != 2
+        and from_id = 1
+        and to_id = #{userId}
+        and conversation_id = #{conversationId}
+    </select>
+    <select id="selectNoticeUnReadCount" resultType="int">
+        select count(1) from message
+        where status = 0
+        and from_id = 1
         and to_id = #{userId}
         <if test="conversationId != null">and conversation_id = #{conversationId}</if>
     </select>

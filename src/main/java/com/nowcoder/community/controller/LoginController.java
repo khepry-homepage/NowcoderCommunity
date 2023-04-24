@@ -3,8 +3,10 @@ package com.nowcoder.community.controller;
 import com.google.code.kaptcha.Producer;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.UserService;
+import com.nowcoder.community.utils.CommunityUtil;
 import com.nowcoder.community.utils.Constants;
 import com.nowcoder.community.utils.MailClient;
+import com.nowcoder.community.utils.RedisKeyUtil;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +27,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 public class LoginController {
@@ -37,19 +41,23 @@ public class LoginController {
     private TemplateEngine templateEngine;
     @Autowired
     private MailClient mailClient;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
     @Value("${server.servlet.context-path}")
     private String contextPath;
+
 
     @RequestMapping(path = "/login", method = RequestMethod.GET)
     public String login() {
         return "site/login";
     }
     @RequestMapping(path = "login", method = RequestMethod.POST)
-    public String login(Model model, User user, String captcha, Boolean isRemember, HttpSession session, HttpServletResponse httpServletResponse){
+    public String login(@CookieValue(Constants.KAPTCHA_SESSION_KEY) String captchaTicket, Model model, User user, String captcha, Boolean isRemember, HttpServletResponse httpServletResponse){
         if (user == null) {
             throw new IllegalArgumentException("非法参数");
         }
-        if (Strings.isBlank(captcha) || !captcha.equalsIgnoreCase((String)session.getAttribute(Constants.KAPTCHA_SESSION_KEY))) {
+        String redisKey = RedisKeyUtil.getCaptchaKey(captchaTicket);
+        if (Strings.isBlank(captcha) || !captcha.equalsIgnoreCase((String)redisTemplate.opsForValue().get(redisKey))) {
             model.addAttribute("captchaMsg", "验证码错误");
             return "site/login";
         }
@@ -138,11 +146,19 @@ public class LoginController {
         return "site/operate-result";
     }
     @RequestMapping(path = "/getCaptcha", method = RequestMethod.GET)
-    public void getCaptcha(HttpServletResponse httpServletResponse, HttpSession session) {
+    public void getCaptcha(HttpServletResponse httpServletResponse) {
         //  生成验证码并写入响应报文
         httpServletResponse.setContentType("image/jpeg");
         String capText = captchaProducer.createText();
-        session.setAttribute(Constants.KAPTCHA_SESSION_KEY, capText);
+        //  生成验证码临时cookie返回给用户
+        String captchaTicket = CommunityUtil.generateUUID();
+        Cookie cookie = new Cookie(Constants.KAPTCHA_SESSION_KEY, captchaTicket);
+        cookie.setMaxAge(60);
+        cookie.setPath(contextPath);
+        httpServletResponse.addCookie(cookie);
+        //  验证码凭证临时存到到redis缓存中
+        String redisKey = RedisKeyUtil.getCaptchaKey(captchaTicket);
+        redisTemplate.opsForValue().set(redisKey, capText, 60, TimeUnit.SECONDS);
         BufferedImage bi = captchaProducer.createImage(capText);
         try {
             ServletOutputStream out = httpServletResponse.getOutputStream();

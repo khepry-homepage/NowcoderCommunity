@@ -25,6 +25,10 @@ public class ServiceLogAspect {
     @Before("pointcut()")
     public void before(JoinPoint joinPoint) {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        //  常规调用非web控制器调用则不记录访问日志
+        if (attributes == null) {
+            return;
+        }
         HttpServletRequest request = attributes.getRequest();
         String ip = request.getRemoteHost();
         String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
