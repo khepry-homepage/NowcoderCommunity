@@ -55,6 +55,10 @@ public class DiscussPostController {
         post.setContent(content);
         post.setCreateTime(new Date());
         discussPostService.addDiscussPost(post);
+        Event event = new Event()
+                .setEventType(Constants.EVENT_TYPE_PUBLISH)
+                .setEntityId(post.getId());
+        producer.commitEvent(event);
         return CommunityUtil.toJSONObject(200, "帖子发布成功！");
     }
     @RequestMapping(path = "/detail/{id}", method = RequestMethod.GET)
@@ -203,6 +207,12 @@ public class DiscussPostController {
                 .setEntityId(entityId)
                 .setUserId(user.getId());
         producer.commitEvent(event);
+        if (entityType == Constants.ENTITY_TYPE_POST) {
+            event = new Event()
+                    .setEventType(Constants.EVENT_TYPE_PUBLISH)
+                    .setEntityId(comment.getEntityId());
+            producer.commitEvent(event);
+        }
         return CommunityUtil.toJSONObject(200, "success！");
     }
 }
