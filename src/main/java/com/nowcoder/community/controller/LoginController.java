@@ -1,5 +1,6 @@
 package com.nowcoder.community.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.google.code.kaptcha.Producer;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.UserService;
@@ -52,7 +53,7 @@ public class LoginController {
         return "site/login";
     }
     @RequestMapping(path = "login", method = RequestMethod.POST)
-    public String login(@CookieValue(Constants.KAPTCHA_SESSION_KEY) String captchaTicket, Model model, User user, String captcha, Boolean isRemember, HttpServletResponse httpServletResponse){
+    public String login(@CookieValue(Constants.KAPTCHA_SESSION_KEY) String captchaTicket, Model model, User user, String captcha, String isRemember, HttpServletResponse httpServletResponse){
         if (user == null) {
             throw new IllegalArgumentException("非法参数");
         }
@@ -61,20 +62,12 @@ public class LoginController {
             model.addAttribute("captchaMsg", "验证码错误");
             return "site/login";
         }
-        int ticketDuration = isRemember ? Constants.TICKET_LONGER_DURATION : Constants.TICKET_DEFAULT_DURATION;
-        Map<String, Object> msgs = userService.login(user.getUsername(), user.getPassword(), ticketDuration);
-        if (msgs.containsKey("passwordMsg")) {
+        Map<String, Object> msgs = userService.login(user.getUsername(), user.getPassword(), isRemember == null ? false : true);
+        if (msgs.containsKey("passwordMsg") || msgs.containsKey("usernameMsg")) {
             model.addAttribute("passwordMsg", msgs.get("passwordMsg"));
+            model.addAttribute("usernameMsg", msgs.get("usernameMsg"));
             return "site/login";
         }
-        if (msgs.containsKey("ticket")) {
-            model.addAttribute("usernameMsg", msgs.get("usernameMsg"));
-            model.addAttribute("passwordMsg", msgs.get("passwordMsg"));
-        }
-        Cookie cookie = new Cookie(Constants.LOGIN_TICKET, (String)msgs.get("ticket"));
-        cookie.setPath(contextPath);
-        cookie.setMaxAge(ticketDuration);
-        httpServletResponse.addCookie(cookie);
         return "redirect:/home/index";
     }
     @RequestMapping(path = "/forget", method = RequestMethod.GET)
@@ -82,7 +75,7 @@ public class LoginController {
         return "site/forget";
     }
     @RequestMapping(path = "/forget", method = RequestMethod.POST)
-    public String resetPassword(Model model, @CookieValue(Constants.LOGIN_TICKET) String login_ticket, String email, String captcha, String newPassword, HttpSession session) {
+    public String resetPassword(Model model, String email, String captcha, String newPassword, HttpSession session) {
         if (email == null) {
             model.addAttribute("emailMsg", "邮箱不能为空");
             return "site/forget";
@@ -101,16 +94,14 @@ public class LoginController {
             return "site/forget";
         }
         session.removeAttribute(Constants.RESET_PASSWORD_KAPTCHA_SESSION_KEY);
-        if (login_ticket != null) {
-            userService.logout(login_ticket);
-        }
+        userService.logout(StpUtil.getLoginIdAsInt());
         model.addAttribute("msg", "重置密码成功");
         model.addAttribute("target", "/login");
         return "site/operate-result";
     }
     @RequestMapping(path = "/logout", method = RequestMethod.GET)
-    public String logout(@CookieValue(Constants.LOGIN_TICKET) String login_ticket) {
-        userService.logout(login_ticket);
+    public String logout() {
+        userService.logout(StpUtil.getLoginIdAsInt());
         return "redirect:/login";
     }
     @RequestMapping(path = "/register", method = RequestMethod.GET)

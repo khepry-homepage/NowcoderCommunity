@@ -67,22 +67,4 @@ public class MapperTests {
         }
     }
 
-    @Test
-    public void testInsertLoginTicket() {
-        LoginTicket loginTicket = new LoginTicket();
-        loginTicket.setUserId(100);
-        loginTicket.setTicket("ticket");
-        loginTicket.setStatus(0);
-        loginTicket.setExpired(new Date(System.currentTimeMillis() + 1000 * 60 * 10));
-        loginTicketMapper.insertLoginTicket(loginTicket);
-    }
-
-    @Test
-    public void testSelectAndUpdateLoginTicket() {
-        LoginTicket loginTicket = loginTicketMapper.selectByTicket("ticket");
-        String ticket = loginTicket.getTicket();
-        assert (ticket.equals("ticket"));
-        int row = loginTicketMapper.updateStatus(ticket, 1);
-        assert (row == 1);
-    }
 }

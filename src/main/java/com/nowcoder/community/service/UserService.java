@@ -1,5 +1,7 @@
 package com.nowcoder.community.service;
 
+import cn.dev33.satoken.stp.SaLoginModel;
+import cn.dev33.satoken.stp.StpUtil;
 import com.nowcoder.community.dao.UserMapper;
 import com.nowcoder.community.entity.LoginTicket;
 import com.nowcoder.community.entity.User;
@@ -16,6 +18,8 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -53,13 +57,8 @@ public class UserService {
         cleanUserCache(userId);
         return userMapper.updatePassword(userId, CommunityUtil.md5(password + salt));
     }
-    public LoginTicket findLoginTicketByTicket(String ticket) {
-        String redisKey = RedisKeyUtil.getLoginTicketKey(ticket);
-        return (LoginTicket) redisTemplate.opsForValue().get(redisKey);
-        //  return loginTicketMapper.selectByTicket(ticket);
-    }
 
-    public Map<String, Object> login(String username, String password, int ticketDuration) {
+    public Map<String, Object> login(String username, String password, boolean isRemember) {
         Map<String, Object> msgs = new HashMap<>();
         if (StringUtils.isBlank(username)) {
             msgs.put("usernameMsg", "用户名不能为空");
@@ -83,35 +82,21 @@ public class UserService {
             msgs.put("passwordMsg", "用户密码错误");
             return msgs;
         }
-        //  判断登录凭证是否存在
-
-
-        //  生成登录凭证
-        LoginTicket loginTicket = new LoginTicket();
-        loginTicket.setUserId(user.getId());
-        loginTicket.setStatus(0);
-        loginTicket.setTicket(CommunityUtil.generateUUID());
-        loginTicket.setExpired(new Date(System.currentTimeMillis() + ticketDuration * 1000));
-        //  不先查询再更新凭证到期时间的原因：查询+更新增加的一次数据库访问开销比数据库存多几个凭证带来的开销大，且ticket是唯一的，尽管不是主键也不会造成重复记录
-        //  loginTicketMapper.insertLoginTicket(loginTicket);
         /**
-         * 更改登录凭证的存储方式：mysql → redis
+         * sa-token实现认证和授权
          */
-        String redisKey = RedisKeyUtil.getLoginTicketKey(loginTicket.getTicket());
-        redisTemplate.opsForValue().set(redisKey, loginTicket);
-        msgs.put("ticket", loginTicket.getTicket());
+        if (isRemember) {
+            StpUtil.login(user.getId(), new SaLoginModel().setTimeout(Constants.TOKEN_DURATION));
+        } else {
+            //  退出浏览器不保存登录状态
+            StpUtil.login(user.getId(), new SaLoginModel().setIsLastingCookie(false));
+        }
+
         return msgs;
     }
 
-    public void logout(String ticket) {
-        String redisKey = RedisKeyUtil.getLoginTicketKey(ticket);
-        LoginTicket loginTicket = (LoginTicket) redisTemplate.opsForValue().get(redisKey);
-        if (loginTicket != null) {
-            //  修改缓存的登录凭证状态为失效
-            loginTicket.setStatus(1);
-            redisTemplate.opsForValue().set(redisKey, loginTicket);
-        }
-        //  loginTicketMapper.updateStatus(ticket, 1);
+    public void logout(int userId) {
+        StpUtil.logout(userId);
     }
 
     public Map<String, Object> register(User user) {
@@ -196,5 +181,23 @@ public class UserService {
     public void cleanUserCache(int userId) {
         String redisKey = RedisKeyUtil.getUserKey(userId);
         redisTemplate.delete(redisKey);
+    }
+    public List<String> getAuthorizationStatus(int userId) {
+        User user = userMapper.selectById(userId);
+        List<String> status = new ArrayList<>();
+        if (user != null) {
+            switch (user.getType()) {
+                case Constants.AUTHORIZATION_USER :
+                    status.add("user");
+                    break;
+                case Constants.AUTHORIZATION_ADMIN :
+                    status.add("admin");
+                    break;
+                case Constants.AUTHORIZATION_MODERATOR :
+                    status.add("moderator");
+                    break;
+            }
+        }
+        return status;
     }
 }

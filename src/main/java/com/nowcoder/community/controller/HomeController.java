@@ -62,7 +62,7 @@ public class HomeController {
         model.addAttribute("discussPosts", discussPostsList);
         return "index";
     }
-    @RequestMapping(value = "/error", method = RequestMethod.GET)
+    @RequestMapping(value = "/denied", method = RequestMethod.GET)
     public String getErrorPage() {
         return "error/500";
     }

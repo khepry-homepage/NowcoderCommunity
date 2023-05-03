@@ -1,15 +1,12 @@
 package com.nowcoder.community.controller;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.nowcoder.community.Annotation.LoginRequired;
-import com.nowcoder.community.entity.Event;
 import com.nowcoder.community.entity.Message;
 import com.nowcoder.community.entity.Page;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.MessageService;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.utils.CommunityUtil;
-import com.nowcoder.community.utils.Constants;
 import com.nowcoder.community.utils.UserHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +30,6 @@ public class MessageController {
     @Autowired
     private UserService userService;
     @RequestMapping(path = "/letter", method = RequestMethod.GET)
-    @LoginRequired
     public String getLetter(Model model, Page page) {
         User user = userHolder.get();
         page.setTotalRows(messageService.findConversationRows(user.getId()));

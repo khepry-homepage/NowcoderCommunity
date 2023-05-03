@@ -1,7 +1,6 @@
 package com.nowcoder.community.controller;
 
 
-import com.nowcoder.community.Annotation.LoginRequired;
 import com.nowcoder.community.entity.*;
 import com.nowcoder.community.event.EventProducer;
 import com.nowcoder.community.service.CommentService;
@@ -42,7 +41,6 @@ public class DiscussPostController {
     private EventProducer producer;
 
     @RequestMapping(path = "/publish", method = RequestMethod.POST)
-    @LoginRequired
     @ResponseBody
     public String publish(String title, String content) {
         if (StringUtils.isBlank(title) || StringUtils.isBlank(content)) {
@@ -62,7 +60,6 @@ public class DiscussPostController {
         return CommunityUtil.toJSONObject(200, "帖子发布成功！");
     }
     @RequestMapping(path = "/detail/{id}", method = RequestMethod.GET)
-    @LoginRequired
     public String getDetail(@PathVariable("id") int id, Model model, Page page) {
         DiscussPost post = discussPostService.findDiscussPostById(id);
         //  帖子已失效
@@ -141,7 +138,6 @@ public class DiscussPostController {
         }
         model.addAttribute("publisher", publisher);
         model.addAttribute("post", post);
-        model.addAttribute("loginUser", loginUser);
         model.addAttribute("postLikeCount", postLikeCount);
         model.addAttribute("postLikeStatus", postLikeStatus);
         return "site/discuss-detail";
