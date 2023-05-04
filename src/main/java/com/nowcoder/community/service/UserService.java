@@ -186,10 +186,8 @@ public class UserService {
         User user = userMapper.selectById(userId);
         List<String> status = new ArrayList<>();
         if (user != null) {
+            status.add("user");
             switch (user.getType()) {
-                case Constants.AUTHORIZATION_USER :
-                    status.add("user");
-                    break;
                 case Constants.AUTHORIZATION_ADMIN :
                     status.add("admin");
                     break;

@@ -35,6 +35,7 @@ public class ElasticSearchService {
     public void saveDiscussPost(DiscussPost post) {
         discussPostRepository.save(post);
     }
+    public void deleteDiscussPostById(int id) { discussPostRepository.deleteById(id); }
     public int countContainKeyword(String keyword) {
         Query nativeQuery = new NativeQueryBuilder()
                 .withQuery(q -> q

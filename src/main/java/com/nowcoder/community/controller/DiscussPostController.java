@@ -209,6 +209,46 @@ public class DiscussPostController {
                     .setEntityId(comment.getEntityId());
             producer.commitEvent(event);
         }
-        return CommunityUtil.toJSONObject(200, "success！");
+        return CommunityUtil.toJSONObject(200, "success!");
+    }
+    @RequestMapping(path = "/setType", method = RequestMethod.POST)
+    @ResponseBody
+    public String setType(int id, int type) {
+        if (type < 0 || type > 1) {
+            return CommunityUtil.toJSONObject(400, "无效类型!");
+        }
+        discussPostService.updatePostType(id, type);
+        Map<String, Object> map = new HashMap<>();
+        map.put("type", type);
+        Event event = new Event()
+                .setEventType(Constants.EVENT_TYPE_PUBLISH)
+                .setEntityId(id);
+        producer.commitEvent(event);
+        return CommunityUtil.toJSONObject(200, "success!", map);
+    }
+    @RequestMapping(path = "/setStatus", method = RequestMethod.POST)
+    @ResponseBody
+    public String setStatus(int id, int status) {
+        if (status < 0 || status > 1) {
+            return CommunityUtil.toJSONObject(400, "无效状态!");
+        }
+        discussPostService.updatePostStatus(id, status);
+        Map<String, Object> map = new HashMap<>();
+        map.put("status", status);
+        Event event = new Event()
+                .setEventType(Constants.EVENT_TYPE_PUBLISH)
+                .setEntityId(id);
+        producer.commitEvent(event);
+        return CommunityUtil.toJSONObject(200, "success!", map);
+    }
+    @RequestMapping(path = "/deletePost", method = RequestMethod.POST)
+    @ResponseBody
+    public String deletePost(int id) {
+        discussPostService.updatePostStatus(id, Constants.DELETED_POST_STATUS);
+        Event event = new Event()
+                .setEventType(Constants.EVENT_TYPE_DELETE_POST)
+                .setEntityId(id);
+        producer.commitEvent(event);
+        return CommunityUtil.toJSONObject(200, "success!");
     }
 }

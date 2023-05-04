@@ -16,10 +16,12 @@ public class Constants {
     public static final String EVENT_TYPE_COMMENT = "comment";              //  事件类型：评论
     public static final String EVENT_TYPE_FOLLOW = "follow";                //  事件类型：关注
     public static final String EVENT_TYPE_PUBLISH = "publish";              //  事件类型：发布帖子
+    public static final String EVENT_TYPE_DELETE_POST = "delete-post";              //  事件类型：删除帖子
     public static final int SYSTEM_USER_ID = 1;                             //  系统用户id
     //  用户权限
     public static final int AUTHORIZATION_USER = 0;
     public static final int AUTHORIZATION_ADMIN = 1;
     public static final int AUTHORIZATION_MODERATOR = 2;
     public static final int TOKEN_DURATION = 60 * 60 * 24 * 7;              //  登录有效期，单位s
+    public static final int DELETED_POST_STATUS = 2;                        //  帖子删除状态码
 }
