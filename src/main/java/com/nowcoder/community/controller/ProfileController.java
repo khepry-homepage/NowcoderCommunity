@@ -57,7 +57,7 @@ public class ProfileController {
         page.setLimit(5);
         page.setPath("/profile/getMyPost/" + userId);
         page.setTotalRows(discussPostService.findDiscussPostRows(userId));
-        List<DiscussPost> posts = discussPostService.findDiscussPosts(userId, page.getOffset(), page.getLimit());
+        List<DiscussPost> posts = discussPostService.findDiscussPosts(userId, page.getOffset(), page.getLimit(), Constants.POST_ORDER_MODE_LATEST);
         List<Map<String, Object>> postList = new ArrayList<>();
         for (DiscussPost post : posts) {
             Map<String, Object> map = new HashMap<>();

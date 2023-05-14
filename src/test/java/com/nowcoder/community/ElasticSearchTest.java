@@ -4,6 +4,7 @@ import com.nowcoder.community.dao.elasticsearch.DiscussPostRepository;
 import com.nowcoder.community.entity.DiscussPost;
 import com.nowcoder.community.service.DiscussPostService;
 import com.nowcoder.community.service.ElasticSearchService;
+import com.nowcoder.community.utils.Constants;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class ElasticSearchTest {
     }
     @Test
     public void testInsertList() {
-        discussPostRepository.saveAll(discussPostService.findDiscussPosts(0, 0, 10));
+        discussPostRepository.saveAll(discussPostService.findDiscussPosts(0, 0, 10, Constants.POST_ORDER_MODE_LATEST));
     }
     @Test
     public void testFindById() {

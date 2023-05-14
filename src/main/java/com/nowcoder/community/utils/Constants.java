@@ -4,6 +4,8 @@ public class Constants {
     public static final int ACTIVATION_SUCCESS = 0;
     public static final int ACTIVATION_ERROR = 1;
     public static final int ACTIVATION_REPEAT = 2;
+    public static final int POST_ORDER_MODE_LATEST = 0;                     //  帖子排序方式: 最新排序
+    public static final int POST_ORDER_MODE_HOTTEST = 1;                     //  帖子排序方式: 最热排序
     public static final int RESET_PASSWORD_CAPTCHA_DURATION = 300;          //  单位: s
     public static final String LOGIN_TICKET = "login_ticket";               //  登录凭证cookie名
     public static final String KAPTCHA_SESSION_KEY = "kaptcha_session_key";

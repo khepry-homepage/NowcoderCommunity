@@ -22,6 +22,7 @@ public class AuthInterceptor {
                                     "/profile/**",
                                     "/follow/**",
                                     "/like/**",
+                                    "/admin/**",
                                     "/search")    // 拦截的 path 列表，可以写多个 */
                             .notMatch("/home/index", "/login", "/user/header/**")        // 排除掉的 path 列表，可以写多个
                             .check(r -> StpUtil.checkLogin())
@@ -29,7 +30,7 @@ public class AuthInterceptor {
                     SaRouter.match("/discuss/setType",
                                     "/discuss/setStatus")
                             .check(r -> StpUtil.checkRole("moderator"));
-                    SaRouter.match("/discuss/deletePost")
+                    SaRouter.match("/discuss/deletePost", "/admin/**")
                             .check(r -> StpUtil.checkRole("admin"));
                 });
     }

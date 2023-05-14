@@ -1,7 +1,6 @@
 package com.nowcoder.community.controller;
 
 import com.nowcoder.community.entity.DiscussPost;
-import com.nowcoder.community.entity.Message;
 import com.nowcoder.community.entity.Page;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.DiscussPostService;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,12 +34,17 @@ public class HomeController {
     private LikeService likeService;
     @Autowired
     private MessageService messageService;
+    //  请求接口参数列表里的类对象会自动实例化并注入model中，若传递同名类变量属性值会调用setter方法为其赋值
     @RequestMapping("/index")
-    public String getIndexPage(Model model, Page page) {
+    public String getIndexPage(Model model, Page page,
+                               @RequestParam(name = "orderMode", defaultValue = "0") int orderMode) {
+        if (orderMode != Constants.POST_ORDER_MODE_LATEST && orderMode != Constants.POST_ORDER_MODE_HOTTEST) {
+            throw new IllegalArgumentException("携带非法参数orderMode！");
+        }
         User loginUser = userHolder.get();
         page.setTotalRows(discussPostService.findDiscussPostRows(0));
-        page.setPath("/home/index");
-        List<DiscussPost> discussPosts = discussPostService.findDiscussPosts(0, page.getOffset(), page.getLimit());
+        page.setPath("/home/index?orderMode=" + orderMode);
+        List<DiscussPost> discussPosts = discussPostService.findDiscussPosts(0, page.getOffset(), page.getLimit(), orderMode);
         List<Map<String, Object>> discussPostsList = new ArrayList<>();
         if (discussPostsList != null) {
             for (DiscussPost discussPost : discussPosts) {
@@ -60,6 +65,7 @@ public class HomeController {
         }
 
         model.addAttribute("discussPosts", discussPostsList);
+        model.addAttribute("orderMode", orderMode);
         return "index";
     }
     @RequestMapping(value = "/denied", method = RequestMethod.GET)

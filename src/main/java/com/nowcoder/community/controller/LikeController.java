@@ -9,8 +9,10 @@ import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.utils.CommunityUtil;
 import com.nowcoder.community.utils.Constants;
+import com.nowcoder.community.utils.RedisKeyUtil;
 import com.nowcoder.community.utils.UserHolder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -32,6 +34,8 @@ public class LikeController {
     private DiscussPostService discussPostService;
     @Autowired
     private EventProducer producer;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
     @RequestMapping(path = "/changeStatus", method = RequestMethod.POST)
     @ResponseBody
     public String changeLikeStatus(int entityType, int entityId) {
@@ -57,6 +61,10 @@ public class LikeController {
                     .setEntityId(entityId)
                     .setEntityUserId(entityUserId);
             producer.commitEvent(event);
+        }
+        if (entityType == Constants.ENTITY_TYPE_POST) {
+            String redisKey = RedisKeyUtil.getScheduledPostKey();
+            redisTemplate.opsForSet().add(redisKey, entityId);
         }
         Map<String, Object> map = new HashMap<>();
         map.put("likeCount", likeCount);

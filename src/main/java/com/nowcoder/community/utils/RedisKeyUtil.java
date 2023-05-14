@@ -1,6 +1,6 @@
 package com.nowcoder.community.utils;
-
-import javax.imageio.plugins.tiff.TIFFDirectory;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class RedisKeyUtil {
     private static final String SPLIT = ":";
@@ -10,6 +10,9 @@ public class RedisKeyUtil {
     private static final String PREFIX_FOLLOWER = "follower";
     private static final String PREFIX_CAPTCHA = "captcha";
     private static final String PREFIX_USER = "user";
+    private static final String PREFIX_UV = "uv";
+    private static final String PREFIX_DAU = "dau";
+    private static final String PREFIX_SCHEDULED = "scheduled";
     public static String getLikeEntityKey(int entityType, int entityId) {
         return PREFIX_LIKE_ENTITY + SPLIT + entityType + SPLIT + entityId;
     }
@@ -30,5 +33,9 @@ public class RedisKeyUtil {
         return PREFIX_CAPTCHA + SPLIT + ticket;
     }
     public static String getUserKey(int userId) { return PREFIX_USER + SPLIT + userId; }
-
+    public static String getUVKey(String date) { return PREFIX_UV + SPLIT + date; }
+    public static String getDAUKey(String date) { return PREFIX_DAU + SPLIT + date; }
+    public static String getUVIntervalKey(Date start, Date end) { return PREFIX_UV + SPLIT + start + SPLIT + end; }
+    public static String getDAUIntervalKey(Date start, Date end) { return PREFIX_DAU + SPLIT + start + SPLIT + end; }
+    public static String getScheduledPostKey() { return PREFIX_SCHEDULED + SPLIT + "post"; }
 }

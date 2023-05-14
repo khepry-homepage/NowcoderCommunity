@@ -9,9 +9,11 @@ import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.utils.CommunityUtil;
 import com.nowcoder.community.utils.Constants;
+import com.nowcoder.community.utils.RedisKeyUtil;
 import com.nowcoder.community.utils.UserHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -39,6 +41,8 @@ public class DiscussPostController {
     private LikeService likeService;
     @Autowired
     private EventProducer producer;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping(path = "/publish", method = RequestMethod.POST)
     @ResponseBody
@@ -239,6 +243,8 @@ public class DiscussPostController {
                 .setEventType(Constants.EVENT_TYPE_PUBLISH)
                 .setEntityId(id);
         producer.commitEvent(event);
+        String redisKey = RedisKeyUtil.getScheduledPostKey();
+        redisTemplate.opsForSet().add(redisKey, id);
         return CommunityUtil.toJSONObject(200, "success!", map);
     }
     @RequestMapping(path = "/deletePost", method = RequestMethod.POST)
